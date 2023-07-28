@@ -8,14 +8,21 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import org.example.model.Employee;
+import org.example.repositories.DepartmentRepository;
 import org.example.repositories.EmployeeRepository;
+import org.example.repositories.PositionRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Route
+@Service
 public class MainView extends VerticalLayout {
 
     private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
+    private final PositionRepository positionRepository;
+
     Grid<Employee> grid;
 
     private Button newBtn = new Button("New");
@@ -24,19 +31,25 @@ public class MainView extends VerticalLayout {
     private HorizontalLayout btnLayout = new HorizontalLayout();
     private HorizontalLayout fieldsLayout = new HorizontalLayout();
 
-    private TextField name = new TextField("First Name");
-    private TextField lastName = new TextField("Last Name");
     private IntegerField idField = new IntegerField("ID");
+    private TextField firstName = new TextField("First Name");
+    private TextField lastName = new TextField("Last Name");
+    private TextField department = new TextField("Department");
+    private TextField position = new TextField("Position");
 
-    private String MAX_WIDTH = "400px";
+    private String MAX_WIDTH = "800px";
     private String BUTTON_WIDTH = "123px";
 
-    public MainView(EmployeeRepository employeeRepository) {
+    public MainView(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, PositionRepository positionRepository) {
         this.employeeRepository = employeeRepository;
+        this.departmentRepository = departmentRepository;
+        this.positionRepository = positionRepository;
         this.grid = new Grid<>(Employee.class, false);
         grid.addColumn(Employee::getIdEmployee).setHeader("ID").setSortable(true).setWidth("20px");
         grid.addColumn(Employee::getFirstName).setHeader("First name").setSortable(true);
         grid.addColumn(Employee::getLastName).setHeader("Last name").setSortable(true);
+        grid.addColumn(employee -> departmentRepository.findById(employee.getDepartmentId()).get().getDepartmentName()).setHeader("Department").setSortable(true);
+        grid.addColumn(employee -> positionRepository.findById(employee.getPositionId()).get().getNamePosition()).setHeader("Position").setSortable(true);
         grid.setMaxWidth(MAX_WIDTH);
 
         deleteBtn.setEnabled(false);
@@ -47,7 +60,7 @@ public class MainView extends VerticalLayout {
 
         btnLayout.add(newBtn, deleteBtn, saveBtn);
         btnLayout.setMaxWidth(MAX_WIDTH);
-        fieldsLayout.add(name, lastName);
+        fieldsLayout.add(firstName, lastName, department, position);
 
         add(btnLayout);
         add(fieldsLayout);
@@ -64,7 +77,7 @@ public class MainView extends VerticalLayout {
             } else {
                 deleteBtn.setEnabled(true);
                 Employee selectedCustomer = selected.getFirstSelectedItem().get();
-                name.setValue(selectedCustomer.getFirstName());
+                firstName.setValue(selectedCustomer.getFirstName());
                 lastName.setValue(selectedCustomer.getLastName());
                 idField.setValue(selectedCustomer.getIdEmployee());
             }
@@ -83,7 +96,7 @@ public class MainView extends VerticalLayout {
 
         saveBtn.addClickListener(click -> {
             Employee customer = new Employee();
-            customer.setFirstName(name.getValue());
+            customer.setFirstName(firstName.getValue());
             customer.setLastName(lastName.getValue());
             customer.setIdEmployee(idField.getValue());
             employeeRepository.save(customer);
@@ -98,7 +111,7 @@ public class MainView extends VerticalLayout {
     }
 
     private void clearInputFields() {
-        name.clear();
+        firstName.clear();
         lastName.clear();
         idField.clear();
     }

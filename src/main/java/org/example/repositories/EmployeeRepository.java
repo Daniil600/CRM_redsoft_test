@@ -1,18 +1,19 @@
 package org.example.repositories;
 
 import org.example.model.Employee;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
+@Repository
 public class EmployeeRepository extends JdbcRepository<Employee, Integer>{
 
-    private static final String SELECT_QUERY = "SELECT * FROM employees;";
 
     @Override
     public List<Employee> findAll() {
+    final String SELECT_QUERY = "SELECT * FROM employees;";
         List<Employee> employeeList = new ArrayList<>();
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);

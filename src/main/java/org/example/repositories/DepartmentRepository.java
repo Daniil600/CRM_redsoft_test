@@ -1,6 +1,7 @@
 package org.example.repositories;
 
 import org.example.model.Department;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -8,12 +9,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class DepartmentRepository extends JdbcRepository<Department, Integer> {
     private static final String SELECT_QUERY = "SELECT * FROM departments;";
 
 
     @Override
-    List<Department> findAll() {
+    public List<Department> findAll() {
         List<Department> departmentList = new ArrayList<>();
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
@@ -31,7 +33,7 @@ public class DepartmentRepository extends JdbcRepository<Department, Integer> {
     }
 
     @Override
-    Department save(Department entity) {
+    public Department save(Department entity) {
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
@@ -52,15 +54,20 @@ public class DepartmentRepository extends JdbcRepository<Department, Integer> {
     }
 
     @Override
-    Optional<Department> findById(Integer integer) {
+    public Optional<Department> findById(Integer integer) {
         Optional<Department> departmentOptional = Optional.empty();
+        List<Department> departmentList = new ArrayList<>();
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
-            String SELECT_BY_ID= "SELECT * FROM departments WHERE department_id = " + integer + ";";
+            String SELECT_BY_ID = "SELECT * FROM departments WHERE department_id = " + integer + ";";
             ResultSet resultSet = statement.executeQuery(SELECT_BY_ID);
+            while (resultSet.next()) {
+                Department department = getResultSet(resultSet);
+                departmentList.add(department);
+            }
 
-            departmentOptional = Optional.of(getResultSet(resultSet));
+            departmentOptional = Optional.of(departmentList.get(0));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -69,7 +76,7 @@ public class DepartmentRepository extends JdbcRepository<Department, Integer> {
     }
 
     @Override
-    void deleteById(Integer integer) {
+    public void deleteById(Integer integer) {
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
@@ -82,7 +89,7 @@ public class DepartmentRepository extends JdbcRepository<Department, Integer> {
     }
 
     @Override
-    void delete(Department entity) {
+    public void delete(Department entity) {
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {

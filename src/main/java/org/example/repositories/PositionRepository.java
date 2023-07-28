@@ -1,18 +1,19 @@
 package org.example.repositories;
 
 import org.example.model.Position;
+import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
+@Repository
 public class PositionRepository extends JdbcRepository<Position, Integer>{
     private static final String SELECT_QUERY = "SELECT * FROM positions;";
 
     @Override
-    List<Position> findAll() {
+    public List<Position> findAll() {
         List<Position> positionList = new ArrayList<>();
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
@@ -30,7 +31,7 @@ public class PositionRepository extends JdbcRepository<Position, Integer>{
     }
 
     @Override
-    Position save(Position entity) {
+    public Position save(Position entity) {
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
@@ -49,15 +50,19 @@ public class PositionRepository extends JdbcRepository<Position, Integer>{
     }
 
     @Override
-    Optional<Position> findById(Integer integer) {
+    public Optional<Position> findById(Integer integer) {
         Optional<Position> positionOptional = Optional.empty();
+        List<Position> positionList = new ArrayList<>();
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
             String SELECT_BY_ID = "SELECT * FROM positions WHERE position_id = " + integer + " LIMIT 1;";
             ResultSet resultSet = statement.executeQuery(SELECT_BY_ID);
-
-            positionOptional = Optional.of(getResultSet(resultSet));
+            while (resultSet.next()) {
+                Position position = getResultSet(resultSet);
+                positionList.add(position);
+            }
+            positionOptional = Optional.of(positionList.get(0));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -66,7 +71,7 @@ public class PositionRepository extends JdbcRepository<Position, Integer>{
     }
 
     @Override
-    void deleteById(Integer integer) {
+    public void deleteById(Integer integer) {
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
@@ -79,7 +84,7 @@ public class PositionRepository extends JdbcRepository<Position, Integer>{
     }
 
     @Override
-    void delete(Position entity) {
+    public void delete(Position entity) {
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {

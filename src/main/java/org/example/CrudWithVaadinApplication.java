@@ -3,10 +3,13 @@ package org.example;
 import org.example.repositories.CreateTable;
 import org.example.repositories.EmployeeRepository;
 import org.example.ui.MainView;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-public class Main {
+@SpringBootApplication
+public class CrudWithVaadinApplication {
     public static void main(String[] args) {
         CreateTable createTable = new CreateTable();
-        MainView mainView = new MainView(new EmployeeRepository());
+        SpringApplication.run(CrudWithVaadinApplication.class, args);
     }
 }
