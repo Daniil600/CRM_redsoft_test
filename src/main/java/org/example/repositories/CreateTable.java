@@ -2,13 +2,9 @@ package org.example.repositories;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
-import java.util.Optional;
 
-public abstract class JdbcRepository<T, ID> {
-
+public class CreateTable {
     public static final String DRIVER = "org.postgresql.Driver";
     public static final String DB = "crm_DB";
     public static final String URL_DRIVER = "jdbc:postgresql://localhost:5432/" + DB;
@@ -28,14 +24,14 @@ public abstract class JdbcRepository<T, ID> {
             "    first_name          VARCHAR(255)," +
             "    last_name          VARCHAR(255)," +
             "    department_id INTEGER," +
-            "    position_id   INTEGER REFERENCES positions(id)" +
+            "    position_id   INTEGER REFERENCES positions(position_id)" +
             ");";
 
     private static final String SQL_CREATE_TABLE_DEPARTMENTS = "CREATE TABLE IF NOT EXISTS departments" +
             "(" +
             "    department_id     INTEGER PRIMARY KEY," +
             "    department_name   VARCHAR(255)," +
-            "    head   INTEGER REFERENCES employees (id)," +
+            "    head   INTEGER REFERENCES employees (employee_id)," +
             "    number VARCHAR(20)," +
             "    email  VARCHAR(255)" +
             ");";
@@ -43,7 +39,7 @@ public abstract class JdbcRepository<T, ID> {
             "REFERENCES departments(department_id);";
 
 
-    public JdbcRepository() {
+    public CreateTable() {
         createTable();
     }
 
@@ -53,7 +49,7 @@ public abstract class JdbcRepository<T, ID> {
                 USER,
                 PASSWORD
         );
-        Statement statement = connection.createStatement();
+             Statement statement = connection.createStatement();
         ){
             statement.executeUpdate(SQL_CREATE_TABLE_POSITIONS);
             statement.executeUpdate(SQL_CREATE_TABLE_EMPLOYEES);
@@ -66,15 +62,4 @@ public abstract class JdbcRepository<T, ID> {
         }
         System.out.println("Connected to database successfully");
     }
-
-    abstract List<T> findAll();
-
-    abstract T save(T entity);
-
-    abstract Optional<T> findById(ID id);
-
-    abstract void deleteById(ID id);
-
-    abstract void delete(T entity);
-
 }
