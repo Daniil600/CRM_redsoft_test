@@ -53,6 +53,7 @@ public class MainView extends VerticalLayout {
         grid.addColumn(Employee::getIdEmployee).setHeader("ID").setSortable(true).setWidth("20px");
         grid.addColumn(Employee::getFirstName).setHeader("First name").setSortable(true);
         grid.addColumn(Employee::getLastName).setHeader("Last name").setSortable(true);
+        grid.addColumn(employee -> positionRepository.findById(employee.getPositionId()).get().getSalary()).setHeader("Salary").setSortable(true);
         grid.addColumn(employee -> employeeRepository.findByIdDepartmentOneEmployee(employee.getDepartmentId()).getDepartmentName()).setHeader("Department").setSortable(true);
         grid.addColumn(employee -> employeeRepository.findByIdPositionOneEmployee(employee.getPositionId()).getPositionName()).setHeader("Position").setSortable(true);
         grid.setMaxWidth(MAX_WIDTH);

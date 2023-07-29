@@ -36,17 +36,20 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
-            System.out.println(entity.getIdEmployee());
             Integer idEmployee = entity.getIdEmployee();
             String firstName = entity.getFirstName();
             String lastName = entity.getLastName();
             Integer departmentId = entity.getDepartmentId();
             Integer positionId = entity.getPositionId();
             if (idEmployee == null) {
-                String SAVE = String.format("INSERT INTO employees(first_name, last_name, department_id, position_id) VALUES ('%s', '%s', '%d', '%d')", firstName, lastName, departmentId, positionId);
+                String SAVE = String.format("INSERT INTO employees" +
+                        "(first_name, last_name, department_id, position_id) VALUES ('%s', '%s', '%d', '%d')"
+                        ,firstName, lastName, departmentId, positionId);
                 statement.executeUpdate(SAVE);
             } else {
-                String SAVE = String.format("UPDATE employees SET first_name = '%s', last_name = '%s', department_id = %d, position_id = %d WHERE employee_id = %d", firstName, lastName, departmentId, positionId, idEmployee);
+                String SAVE = String.format("UPDATE employees SET first_name = '%s', " +
+                        "last_name = '%s', department_id = %d, position_id = %d WHERE employee_id = %d",
+                        firstName, lastName, departmentId, positionId, idEmployee);
                 System.out.println(SAVE);
                 statement.executeUpdate(SAVE);
             }
