@@ -23,7 +23,7 @@ public class MainView extends VerticalLayout {
     private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
 
-    Grid<Employee> grid;
+    private Grid<Employee> grid;
 
     private Button newBtn = new Button("New");
     private Button deleteBtn = new Button("Delete");

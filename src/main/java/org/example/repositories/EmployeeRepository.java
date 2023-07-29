@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Optional;
 @Repository
 public class EmployeeRepository extends JdbcRepository<Employee, Integer>{
-
-
     @Override
     public List<Employee> findAll() {
     final String SELECT_QUERY = "SELECT * FROM employees;";
