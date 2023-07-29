@@ -1,5 +1,6 @@
 package org.example.ui;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
@@ -7,6 +8,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import org.example.model.Department;
 import org.example.model.Employee;
@@ -17,6 +19,7 @@ import org.example.repositories.PositionRepository;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Route
@@ -44,6 +47,12 @@ public class MainView extends VerticalLayout {
 
     private String MAX_WIDTH = "817px";
     private String BUTTON_WIDTH = "261px";
+
+    private HorizontalLayout searchLayout = new HorizontalLayout();
+    TextField filterTextForFirstName = new TextField();
+    TextField filterTextForLastName = new TextField();
+    private ComboBox<String> filterBoxForDepartment = new ComboBox<>();
+    private ComboBox<String> filterBoxForPosition = new ComboBox<>();
 
     public MainView(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, PositionRepository positionRepository) {
         this.employeeRepository = employeeRepository;
@@ -73,9 +82,47 @@ public class MainView extends VerticalLayout {
         fieldsLayout.add(firstName, lastName, department, position);
         add(btnLayout);
         add(fieldsLayout);
+        searchLayout.add(getToolbar());
+        add(searchLayout);
         add(grid);
         refreshTableData();
         addButtonsActionListeners();
+    }
+
+    private List<Component> getToolbar() {
+        filterTextForFirstName.setPlaceholder("Filter by first name...");
+        filterTextForFirstName.setClearButtonVisible(true);
+        filterTextForFirstName.setValueChangeMode(ValueChangeMode.LAZY);
+        filterTextForFirstName.addValueChangeListener(e -> updateListFirstName());
+
+        filterTextForLastName.setPlaceholder("Filter by last name...");
+        filterTextForLastName.setClearButtonVisible(true);
+        filterTextForLastName.setValueChangeMode(ValueChangeMode.LAZY);
+        filterTextForLastName.addValueChangeListener(e -> updateListLastName());
+
+        var toolbarFirstName = new HorizontalLayout(filterTextForFirstName);
+        var toolbarLastName = new HorizontalLayout(filterTextForLastName);
+        List<Component> components = new ArrayList<>();
+        components.add(toolbarFirstName);
+        components.add(toolbarLastName);
+
+
+        return components;
+    }
+
+    private void updateListFirstName() {
+        grid.setItems(refreshTableData(filterTextForFirstName.getValue()));
+    }
+    private void updateListLastName() {
+        grid.setItems(refreshTableData(filterTextForLastName.getValue()));
+    }
+
+    public List<Employee> refreshTableData(String stringFilter) {
+        if (stringFilter == null || stringFilter.isEmpty()) {
+            return employeeRepository.findAll();
+        } else {
+            return employeeRepository.searchByName(stringFilter);
+        }
     }
 
     private void addButtonsActionListeners() {

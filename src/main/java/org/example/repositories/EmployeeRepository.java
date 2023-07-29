@@ -12,6 +12,12 @@ import java.util.Optional;
 
 @Repository
 public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
+    PositionRepository positionRepository;
+
+    public EmployeeRepository(PositionRepository positionRepository) {
+        this.positionRepository = positionRepository;
+    }
+
     @Override
     public List<Employee> findAll() {
         final String SELECT_QUERY = "SELECT * FROM employees;";
@@ -31,6 +37,30 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
         return employeeList;
     }
 
+
+    public List<Employee> searchByName(String searchTerm) {
+
+        List<Employee> employeeList = new ArrayList<>();
+        String SELECT_QUERY = "SELECT * FROM employees c WHERE LOWER(c.first_name) LIKE LOWER(?) OR LOWER(c.last_name) LIKE LOWER(?)";
+
+        try (Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(SELECT_QUERY)) {
+            statement.setString(1, "%" + searchTerm + "%");
+            statement.setString(2, "%" + searchTerm + "%");
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Employee employee = getResultSet(resultSet);
+                employeeList.add(employee);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println(e.getMessage());
+        }
+        System.out.println(employeeList);
+        return employeeList;
+    }
+
     @Override
     public Employee save(Employee entity) {
         try (
@@ -41,22 +71,38 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
             String lastName = entity.getLastName();
             Integer departmentId = entity.getDepartmentId();
             Integer positionId = entity.getPositionId();
+
             if (idEmployee == null) {
                 String SAVE = String.format("INSERT INTO employees" +
-                        "(first_name, last_name, department_id, position_id) VALUES ('%s', '%s', '%d', '%d')"
-                        ,firstName, lastName, departmentId, positionId);
-                statement.executeUpdate(SAVE);
+                                "(first_name, last_name, department_id, position_id) VALUES ('%s', '%s', '%d', '%d')"
+                        , firstName, lastName, departmentId, positionId);
+                statement.executeUpdate(SAVE, Statement.RETURN_GENERATED_KEYS);
+                if (positionRepository.findById(positionId).get().getNamePosition().equals("Lead")) {
+                    ResultSet resultSet = statement.getGeneratedKeys();
+                    if (resultSet.next()) {
+                        idEmployee = resultSet.getInt(1);
+                        System.out.println("UPDATE departments SET head = " + idEmployee + ";");
+                        String SQL_UPDATE_DEPARTMENT = "UPDATE departments SET head = " + idEmployee + " WHERE department_id = " + entity.getDepartmentId() + ";";
+                        statement.executeUpdate(SQL_UPDATE_DEPARTMENT);
+                    } else {
+                        throw new SQLException();
+                    }
+                }
             } else {
                 String SAVE = String.format("UPDATE employees SET first_name = '%s', " +
-                        "last_name = '%s', department_id = %d, position_id = %d WHERE employee_id = %d",
+                                "last_name = '%s', department_id = %d, position_id = %d WHERE employee_id = %d",
                         firstName, lastName, departmentId, positionId, idEmployee);
-                System.out.println(SAVE);
                 statement.executeUpdate(SAVE);
+                if (positionRepository.findById(positionId).get().getNamePosition().equals("Lead")) {
+                    String SQL_UPDATE_DEPARTMENT = "UPDATE departments SET head = "
+                            + idEmployee + " WHERE department_id = " + departmentId + ";";
+                    statement.executeUpdate(SQL_UPDATE_DEPARTMENT);
+                }
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
         return entity;
     }
 
@@ -131,13 +177,16 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
     @Override
     public void delete(Employee entity) {
         try (
-
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
+            if (positionRepository.findById(entity.getPositionId()).get().getNamePosition().equals("Lead")) {
+                String DELETE_HEAD_DEVELOPER = "UPDATE departments SET head = null WHERE department_id = " + entity.getDepartmentId() + ";";
+                statement.executeUpdate(DELETE_HEAD_DEVELOPER);
+            }
             System.out.println(entity.getIdEmployee());
             String DELETE_BY_ID = "DELETE FROM employees WHERE employee_id = " + entity.getIdEmployee() + ";";
-
             statement.executeUpdate(DELETE_BY_ID);
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
