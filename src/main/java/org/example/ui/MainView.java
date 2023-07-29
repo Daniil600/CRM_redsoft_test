@@ -11,12 +11,14 @@ import org.example.model.Employee;
 import org.example.repositories.DepartmentRepository;
 import org.example.repositories.EmployeeRepository;
 import org.example.repositories.PositionRepository;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Route
 @Service
+@Scope("prototype")
 public class MainView extends VerticalLayout {
 
     private final EmployeeRepository employeeRepository;
