@@ -1,13 +1,16 @@
 package org.example.ui;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import org.example.model.Department;
 import org.example.model.Employee;
+import org.example.model.Position;
 import org.example.repositories.DepartmentRepository;
 import org.example.repositories.EmployeeRepository;
 import org.example.repositories.PositionRepository;
@@ -36,11 +39,11 @@ public class MainView extends VerticalLayout {
     private IntegerField idField = new IntegerField("ID");
     private TextField firstName = new TextField("First Name");
     private TextField lastName = new TextField("Last Name");
-    private TextField department = new TextField("Department");
-    private TextField position = new TextField("Position");
+    private ComboBox<String> department = new ComboBox<>("Department");
+    private ComboBox<String> position = new ComboBox<>("Position");
 
-    private String MAX_WIDTH = "800px";
-    private String BUTTON_WIDTH = "123px";
+    private String MAX_WIDTH = "817px";
+    private String BUTTON_WIDTH = "261px";
 
     public MainView(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, PositionRepository positionRepository) {
         this.employeeRepository = employeeRepository;
@@ -50,9 +53,12 @@ public class MainView extends VerticalLayout {
         grid.addColumn(Employee::getIdEmployee).setHeader("ID").setSortable(true).setWidth("20px");
         grid.addColumn(Employee::getFirstName).setHeader("First name").setSortable(true);
         grid.addColumn(Employee::getLastName).setHeader("Last name").setSortable(true);
-        grid.addColumn(employee -> departmentRepository.findById(employee.getDepartmentId()).get().getDepartmentName()).setHeader("Department").setSortable(true);
-        grid.addColumn(employee -> positionRepository.findById(employee.getPositionId()).get().getNamePosition()).setHeader("Position").setSortable(true);
+        grid.addColumn(employee -> employeeRepository.findByIdDepartmentOneEmployee(employee.getDepartmentId()).getDepartmentName()).setHeader("Department").setSortable(true);
+        grid.addColumn(employee -> employeeRepository.findByIdPositionOneEmployee(employee.getPositionId()).getPositionName()).setHeader("Position").setSortable(true);
         grid.setMaxWidth(MAX_WIDTH);
+
+        department.setItems(departmentRepository.findAllNameDepartment());
+        position.setItems(positionRepository.findAllPositionName());
 
         deleteBtn.setEnabled(false);
 
@@ -62,8 +68,8 @@ public class MainView extends VerticalLayout {
 
         btnLayout.add(newBtn, deleteBtn, saveBtn);
         btnLayout.setMaxWidth(MAX_WIDTH);
-        fieldsLayout.add(firstName, lastName, department, position);
 
+        fieldsLayout.add(firstName, lastName, department, position);
         add(btnLayout);
         add(fieldsLayout);
         add(grid);
@@ -98,9 +104,11 @@ public class MainView extends VerticalLayout {
 
         saveBtn.addClickListener(click -> {
             Employee customer = new Employee();
+            customer.setIdEmployee(idField.getValue());
             customer.setFirstName(firstName.getValue());
             customer.setLastName(lastName.getValue());
-            customer.setIdEmployee(idField.getValue());
+            customer.setDepartmentId(departmentRepository.findByName(department.getValue()).getIdDepartment());
+            customer.setPositionId(positionRepository.findByName(position.getValue()).getIdPosition());
             employeeRepository.save(customer);
             clearInputFields();
             refreshTableData();

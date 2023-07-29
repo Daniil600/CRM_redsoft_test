@@ -6,11 +6,12 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 @Repository
 public class PositionRepository extends JdbcRepository<Position, Integer>{
-    private static final String SELECT_QUERY = "SELECT * FROM positions;";
+
 
     @Override
     public List<Position> findAll() {
@@ -18,7 +19,7 @@ public class PositionRepository extends JdbcRepository<Position, Integer>{
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
-
+            String SELECT_QUERY = "SELECT * FROM positions;";
             ResultSet resultSet = statement.executeQuery(SELECT_QUERY);
             while (resultSet.next()) {
                 Position position = getResultSet(resultSet);
@@ -28,6 +29,40 @@ public class PositionRepository extends JdbcRepository<Position, Integer>{
             throw new RuntimeException(e);
         }
         return positionList;
+    }
+
+    public Position findByName(String name) {
+        List<Position> positionList = new ArrayList<>();
+        try (
+                Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
+                Statement statement = connection.createStatement()) {
+            String SELECT_QUERY = "SELECT * FROM positions WHERE position_name = '" + name + "';";
+            ResultSet resultSet = statement.executeQuery(SELECT_QUERY);
+            while (resultSet.next()) {
+                Position position = getResultSet(resultSet);
+                positionList.add(position);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return positionList.get(0);
+    }
+
+    public List<String> findAllPositionName() {
+        List<String> positionList = new ArrayList<>();
+        try (
+                Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
+                Statement statement = connection.createStatement()) {
+            String SELECT_NAMES_POSITION = "SELECT position_name from positions";
+            ResultSet resultSet = statement.executeQuery(SELECT_NAMES_POSITION);
+            while (resultSet.next()) {
+                String positionName = resultSet.getString("position_name");
+                positionList.add(positionName);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return positionList.isEmpty() ? Collections.EMPTY_LIST : positionList;
     }
 
     @Override

@@ -1,13 +1,14 @@
+
 CREATE TABLE IF NOT EXISTS positions
 (
-    position_id   INTEGER PRIMARY KEY,
-    position_name VARCHAR(255),
+    position_id   SERIAL PRIMARY KEY,
+    position_name VARCHAR(255) UNIQUE,
     salary        DECIMAL(10, 2)
 );
 
 CREATE TABLE IF NOT EXISTS employees
 (
-    employee_id   INTEGER PRIMARY KEY,
+    employee_id   SERIAL PRIMARY KEY,
     first_name    VARCHAR(255),
     last_name     VARCHAR(255),
     department_id INTEGER,
@@ -16,8 +17,8 @@ CREATE TABLE IF NOT EXISTS employees
 
 CREATE TABLE IF NOT EXISTS departments
 (
-    department_id   INTEGER PRIMARY KEY,
-    department_name VARCHAR(255),
+    department_id   SERIAL PRIMARY KEY,
+    department_name VARCHAR(255) UNIQUE ,
     head            INTEGER REFERENCES employees (employee_id),
     number          VARCHAR(20),
     email           VARCHAR(255)
