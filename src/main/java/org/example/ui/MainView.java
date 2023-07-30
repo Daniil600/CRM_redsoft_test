@@ -21,12 +21,17 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Route
 @Service
 @Scope("prototype")
 public class MainView extends VerticalLayout {
+    static Map<Integer, Position> positionMap = new HashMap<>();
+    static Map<Integer, Department> departmentMap = new HashMap<>();
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
@@ -60,12 +65,14 @@ public class MainView extends VerticalLayout {
         this.departmentRepository = departmentRepository;
         this.positionRepository = positionRepository;
         this.grid = new Grid<>(Employee.class, false);
+        setPositionMap(positionRepository.findAll());
+        setDepartmentMap(departmentRepository.findAll());
         grid.addColumn(Employee::getIdEmployee).setHeader("ID").setSortable(true).setWidth("20px");
         grid.addColumn(Employee::getFirstName).setHeader("First name").setSortable(true);
         grid.addColumn(Employee::getLastName).setHeader("Last name").setSortable(true);
-        grid.addColumn(employee -> positionRepository.findById(employee.getPositionId()).get().getSalary()).setHeader("Salary").setSortable(true);
-        grid.addColumn(employee -> employeeRepository.findByIdDepartmentOneEmployee(employee.getDepartmentId()).getDepartmentName()).setHeader("Department").setSortable(true);
-        grid.addColumn(employee -> employeeRepository.findByIdPositionOneEmployee(employee.getPositionId()).getPositionName()).setHeader("Position").setSortable(true);
+        grid.addColumn(employee -> positionMap.get(employee.getPositionId()).getSalary()).setHeader("Salary").setSortable(true);
+        grid.addColumn(employee -> departmentMap.get(employee.getDepartmentId()).getDepartmentName()).setHeader("Department").setSortable(true);
+        grid.addColumn(employee -> positionMap.get(employee.getPositionId()).getNamePosition()).setHeader("Position").setSortable(true);
         grid.setMaxWidth(MAX_WIDTH);
 
         department.setItems(departmentRepository.findAllNameDepartment());
@@ -90,6 +97,17 @@ public class MainView extends VerticalLayout {
         add(grid);
         refreshTableData();
         addButtonsActionListeners();
+    }
+
+    private static void setPositionMap(List<Position> positionList){
+        for (int i = 0; i < positionList.size(); i++) {
+            positionMap.put(positionList.get(i).getIdPosition(), positionList.get(i));
+        }
+    }
+    private static void setDepartmentMap(List<Department> departmentList){
+        for (int i = 0; i < departmentList.size(); i++) {
+            departmentMap.put(departmentList.get(i).getIdDepartment(), departmentList.get(i));
+        }
     }
 
     private List<Component> getToolbar() {
@@ -207,8 +225,14 @@ public class MainView extends VerticalLayout {
             customer.setIdEmployee(idField.getValue());
             customer.setFirstName(firstName.getValue());
             customer.setLastName(lastName.getValue());
-            customer.setDepartmentId(departmentRepository.findByName(department.getValue()).getIdDepartment());
-            customer.setPositionId(positionRepository.findByName(position.getValue()).getIdPosition());
+            customer.setDepartmentId(departmentMap.entrySet().stream()
+                    .map(departmentStream -> departmentStream.getValue())
+                    .filter(departmentStream -> departmentStream.getDepartmentName().equals(department.getValue()))
+                    .findFirst().get().getIdDepartment());
+            customer.setPositionId(positionMap.entrySet().stream()
+                    .map(departmentStream -> departmentStream.getValue())
+                    .filter(departmentStream -> departmentStream.getNamePosition().equals(position.getValue()))
+                    .findFirst().get().getIdPosition());
             employeeRepository.save(customer);
             clearInputFields();
             refreshTableData();

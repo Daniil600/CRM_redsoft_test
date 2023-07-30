@@ -245,7 +245,7 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
-            if (positionRepository.findById(entity.getPositionId()).get().getNamePosition().equals("Lead")) {
+            if (positionRepository.findById(entity.getPositionId()).get().getNamePosition().equals("Director")) {
                 String DELETE_HEAD_DEVELOPER = "UPDATE departments SET head = null WHERE department_id = " + entity.getDepartmentId() + ";";
                 statement.executeUpdate(DELETE_HEAD_DEVELOPER);
             }
