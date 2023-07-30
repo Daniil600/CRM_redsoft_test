@@ -143,7 +143,7 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
                                 "(first_name, last_name, department_id, position_id) VALUES ('%s', '%s', '%d', '%d')"
                         , firstName, lastName, departmentId, positionId);
                 statement.executeUpdate(SAVE, Statement.RETURN_GENERATED_KEYS);
-                if (positionRepository.findById(positionId).get().getNamePosition().equals("Lead")) {
+                if (positionRepository.findById(positionId).get().getNamePosition().equals("Director")) {
                     ResultSet resultSet = statement.getGeneratedKeys();
                     if (resultSet.next()) {
                         idEmployee = resultSet.getInt(1);
