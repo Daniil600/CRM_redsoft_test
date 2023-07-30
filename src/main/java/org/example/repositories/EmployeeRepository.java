@@ -3,19 +3,25 @@ package org.example.repositories;
 import org.example.dto.EmployeeToDepartmentName;
 import org.example.dto.EmployeeToPositionName;
 import org.example.model.Employee;
+import org.example.model.Position;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
     PositionRepository positionRepository;
+    static Map<Integer, Position> positionMap = new HashMap<>();
 
     public EmployeeRepository(PositionRepository positionRepository) {
         this.positionRepository = positionRepository;
+        setPositionMapRepository(positionRepository.findAll());
+    }
+    private void setPositionMapRepository(List<Position> positionList){
+        for (int i = 0; i < positionList.size(); i++) {
+            positionMap.put(positionList.get(i).getIdPosition(), positionList.get(i));
+        }
     }
 
     @Override
@@ -155,11 +161,16 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
                     }
                 }
             } else {
+                Employee employee = findById(idEmployee).get();
                 String SAVE = String.format("UPDATE employees SET first_name = '%s', " +
                                 "last_name = '%s', department_id = %d, position_id = %d WHERE employee_id = %d",
                         firstName, lastName, departmentId, positionId, idEmployee);
                 statement.executeUpdate(SAVE);
-                if (positionRepository.findById(positionId).get().getNamePosition().equals("Lead")) {
+                if (positionMap.get(employee.getPositionId()).getNamePosition().equals("Director")) {
+                    String DELETE_HEAD_DEVELOPER = "UPDATE departments SET head = null WHERE department_id = " + employee.getDepartmentId() + ";";
+                    statement.executeUpdate(DELETE_HEAD_DEVELOPER);
+                }
+                if (positionMap.get(positionId).getNamePosition().equals("Director")) {
                     String SQL_UPDATE_DEPARTMENT = "UPDATE departments SET head = "
                             + idEmployee + " WHERE department_id = " + departmentId + ";";
                     statement.executeUpdate(SQL_UPDATE_DEPARTMENT);
@@ -175,56 +186,22 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
     @Override
     public Optional<Employee> findById(Integer integer) {
         Optional<Employee> employeeOtional = Optional.empty();
+        List<Employee> employeeList = new ArrayList<>();
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
             String SELECT_BY_ID = "SELECT * FROM employees WHERE employee_id = " + integer + " LIMIT 1;";
             ResultSet resultSet = statement.executeQuery(SELECT_BY_ID);
-
-            employeeOtional = Optional.of(getResultSet(resultSet));
+            while (resultSet.next()){
+                employeeList.add(getResultSet(resultSet));
+            }
+            employeeOtional = Optional.of(employeeList.get(0));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
 
         return employeeOtional;
-    }
-
-    public EmployeeToDepartmentName findByIdDepartmentOneEmployee(Integer integer) {
-        List<EmployeeToDepartmentName> employeeToDepartmentNames = new ArrayList<>();
-        try (
-                Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
-                Statement statement = connection.createStatement()) {
-            String SELECT_DEPARTMENT_BY_ID = "SELECT department_id, department_name FROM employees " +
-                    "JOIN departments USING(department_id)" +
-                    " WHERE department_id = " + integer + " LIMIT 1;";
-            ResultSet resultSet = statement.executeQuery(SELECT_DEPARTMENT_BY_ID);
-
-            while (resultSet.next()) {
-                employeeToDepartmentNames.add(getResultSetDepartment(resultSet));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return employeeToDepartmentNames.get(0);
-    }
-
-    public EmployeeToPositionName findByIdPositionOneEmployee(Integer integer) {
-        List<EmployeeToPositionName> employeeToPositionNames = new ArrayList<>();
-        try (
-                Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
-                Statement statement = connection.createStatement()) {
-            String SELECT_POSITION_BY_ID = "SELECT position_id, position_name FROM employees " +
-                    "JOIN positions USING(position_id)" +
-                    " WHERE position_id = " + integer + " LIMIT 1;";
-            ResultSet resultSet = statement.executeQuery(SELECT_POSITION_BY_ID);
-            while (resultSet.next()) {
-                employeeToPositionNames.add(getResultSetPosition(resultSet));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return employeeToPositionNames.get(0);
     }
 
     @Override
