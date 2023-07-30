@@ -36,17 +36,83 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
         }
         return employeeList;
     }
-
-
-    public List<Employee> searchByName(String searchTerm) {
+    public List<Employee> searchByPosition(String searchTerm) {
 
         List<Employee> employeeList = new ArrayList<>();
-        String SELECT_QUERY = "SELECT * FROM employees c WHERE LOWER(c.first_name) LIKE LOWER(?) OR LOWER(c.last_name) LIKE LOWER(?)";
+        String SELECT_QUERY = "SELECT e.employee_id, e.first_name, e.last_name, e.department_id, e.position_id" +
+                " FROM employees as e JOIN positions USING(position_id) WHERE LOWER(position_name) LIKE LOWER(?)";
 
         try (Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
              PreparedStatement statement = connection.prepareStatement(SELECT_QUERY)) {
             statement.setString(1, "%" + searchTerm + "%");
-            statement.setString(2, "%" + searchTerm + "%");
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Employee employee = getResultSet(resultSet);
+                employeeList.add(employee);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println(e.getMessage());
+        }
+        System.out.println(employeeList);
+        return employeeList;
+    }
+
+    public List<Employee> searchByDepartment(String searchTerm) {
+
+        List<Employee> employeeList = new ArrayList<>();
+        String SELECT_QUERY = "SELECT e.employee_id, e.first_name, e.last_name, e.department_id, e.position_id" +
+                " FROM employees as e JOIN departments USING(department_id) WHERE LOWER(department_name) LIKE LOWER(?)";
+
+        try (Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(SELECT_QUERY)) {
+            statement.setString(1, "%" + searchTerm + "%");
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Employee employee = getResultSet(resultSet);
+                employeeList.add(employee);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println(e.getMessage());
+        }
+        System.out.println(employeeList);
+        return employeeList;
+    }
+
+
+    public List<Employee> searchByNameLastName(String searchTerm) {
+
+        List<Employee> employeeList = new ArrayList<>();
+        String SELECT_QUERY = "SELECT * FROM employees c WHERE LOWER(c.last_name) LIKE LOWER(?)";
+
+        try (Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(SELECT_QUERY)) {
+            statement.setString(1, "%" + searchTerm + "%");
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Employee employee = getResultSet(resultSet);
+                employeeList.add(employee);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println(e.getMessage());
+        }
+        System.out.println(employeeList);
+        return employeeList;
+    }
+
+    public List<Employee> searchByNameFirstName(String searchTerm) {
+
+        List<Employee> employeeList = new ArrayList<>();
+        String SELECT_QUERY = "SELECT * FROM employees c WHERE LOWER(c.first_name) LIKE LOWER(?)";
+
+        try (Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(SELECT_QUERY)) {
+            statement.setString(1, "%" + searchTerm + "%");
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {

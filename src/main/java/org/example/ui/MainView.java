@@ -10,6 +10,7 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 import org.example.model.Department;
 import org.example.model.Employee;
 import org.example.model.Position;
@@ -24,6 +25,7 @@ import java.util.List;
 
 @Route
 @Service
+@PermitAll
 @Scope("prototype")
 public class MainView extends VerticalLayout {
 
@@ -93,35 +95,84 @@ public class MainView extends VerticalLayout {
         filterTextForFirstName.setPlaceholder("Filter by first name...");
         filterTextForFirstName.setClearButtonVisible(true);
         filterTextForFirstName.setValueChangeMode(ValueChangeMode.LAZY);
-        filterTextForFirstName.addValueChangeListener(e -> updateListFirstName());
+        filterTextForFirstName.addValueChangeListener(e -> refreshTableDataForSearchFirstName());
 
         filterTextForLastName.setPlaceholder("Filter by last name...");
         filterTextForLastName.setClearButtonVisible(true);
         filterTextForLastName.setValueChangeMode(ValueChangeMode.LAZY);
-        filterTextForLastName.addValueChangeListener(e -> updateListLastName());
+        filterTextForLastName.addValueChangeListener(e -> refreshTableDataForSearchLastName());
+
+        filterBoxForDepartment.setPlaceholder("Filter by department name...");
+        filterBoxForDepartment.setClearButtonVisible(true);
+        filterBoxForDepartment.setItems(departmentRepository.findAllNameDepartment());
+        filterBoxForDepartment.addValueChangeListener(e -> refreshTableDataForSearchDepartmentName());
+
+        filterBoxForPosition.setPlaceholder("Filter by position name...");
+        filterBoxForPosition.setClearButtonVisible(true);
+        filterBoxForPosition.setItems(positionRepository.findAllPositionName());
+        filterBoxForPosition.addValueChangeListener(e -> refreshTableDataForSearchPositionName());
 
         var toolbarFirstName = new HorizontalLayout(filterTextForFirstName);
         var toolbarLastName = new HorizontalLayout(filterTextForLastName);
+        var toolbarDepartment = new HorizontalLayout(filterBoxForDepartment);
+        var toolbarPosition = new HorizontalLayout(filterBoxForPosition);
+
         List<Component> components = new ArrayList<>();
         components.add(toolbarFirstName);
         components.add(toolbarLastName);
-
+        components.add(toolbarDepartment);
+        components.add(toolbarPosition);
 
         return components;
     }
 
-    private void updateListFirstName() {
-        grid.setItems(refreshTableData(filterTextForFirstName.getValue()));
+    public void refreshTableData() {
+        grid.setItems(findAllEmployee());
     }
-    private void updateListLastName() {
-        grid.setItems(refreshTableData(filterTextForLastName.getValue()));
+    private List<Employee> findAllEmployee() {
+        return employeeRepository.findAll();
+    }
+    public void refreshTableDataForSearchFirstName() {
+        grid.setItems(findAllEmployeeOfFirstName(filterTextForFirstName.getValue()));
     }
 
-    public List<Employee> refreshTableData(String stringFilter) {
+    public void refreshTableDataForSearchLastName() {
+        grid.setItems(findAllEmployeeOfLastName(filterTextForLastName.getValue()));
+    }
+    public void refreshTableDataForSearchDepartmentName() {
+        grid.setItems(findAllEmployeeOfDepartment(filterBoxForDepartment.getValue()));
+    }
+    public void refreshTableDataForSearchPositionName() {
+        grid.setItems(findAllEmployeeOfPosition(filterBoxForPosition.getValue()));
+    }
+
+    private List<Employee> findAllEmployeeOfFirstName(String stringFilter) {
         if (stringFilter == null || stringFilter.isEmpty()) {
             return employeeRepository.findAll();
         } else {
-            return employeeRepository.searchByName(stringFilter);
+            return employeeRepository.searchByNameFirstName(stringFilter);
+        }
+    }
+    private List<Employee> findAllEmployeeOfLastName(String stringFilter) {
+        if (stringFilter == null || stringFilter.isEmpty()) {
+            return employeeRepository.findAll();
+        } else {
+            return employeeRepository.searchByNameLastName(stringFilter);
+        }
+    }
+    private List<Employee> findAllEmployeeOfDepartment(String stringFilter) {
+        if (stringFilter == null || stringFilter.isEmpty()) {
+            return employeeRepository.findAll();
+        } else {
+            return employeeRepository.searchByDepartment(stringFilter);
+        }
+    }
+
+    private List<Employee> findAllEmployeeOfPosition(String stringFilter) {
+        if (stringFilter == null || stringFilter.isEmpty()) {
+            return employeeRepository.findAll();
+        } else {
+            return employeeRepository.searchByPosition(stringFilter);
         }
     }
 
@@ -162,11 +213,8 @@ public class MainView extends VerticalLayout {
             refreshTableData();
         });
     }
+//TODO реализовать метод который по фильтру будет возвращать list employees
 
-    private void refreshTableData() {
-        List<Employee> employeeList = employeeRepository.findAll();
-        grid.setItems(employeeList);
-    }
 
     private void clearInputFields() {
         firstName.clear();
