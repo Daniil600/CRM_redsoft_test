@@ -87,7 +87,7 @@ public class DepartmentRepository extends JdbcRepository<Department, Integer> {
 
     @Override
     public Optional<Department> findById(Integer integer) {
-        Optional<Department> departmentOptional = Optional.empty();
+        Optional<Department> departmentOptional;
         List<Department> departmentList = new ArrayList<>();
         try (
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
@@ -113,7 +113,6 @@ public class DepartmentRepository extends JdbcRepository<Department, Integer> {
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
             String SELECT_BY_ID = "DELETE * FROM departments WHERE department_id = " + integer + " LIMIT 1;";
-
             statement.executeQuery(SELECT_BY_ID);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -126,7 +125,6 @@ public class DepartmentRepository extends JdbcRepository<Department, Integer> {
                 Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
                 Statement statement = connection.createStatement()) {
             String SELECT_BY_ID = "SELECT * FROM departments WHERE department_id = " + entity.getIdDepartment() + " LIMIT 1;";
-
             statement.executeQuery(SELECT_BY_ID);
         } catch (SQLException e) {
             throw new RuntimeException(e);

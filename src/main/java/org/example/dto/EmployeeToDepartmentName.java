@@ -4,9 +4,6 @@ public class EmployeeToDepartmentName {
     private Integer departmentid;
     private String departmentName;
 
-    public Integer getDepartmentid() {
-        return departmentid;
-    }
 
     public void setDepartmentid(Integer departmentid) {
         this.departmentid = departmentid;

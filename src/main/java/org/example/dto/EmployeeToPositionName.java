@@ -4,9 +4,7 @@ public class EmployeeToPositionName {
     private Integer positionId;
     private String positionName;
 
-    public Integer getPositionId() {
-        return positionId;
-    }
+
 
     public void setPositionId(Integer positionId) {
         this.positionId = positionId;
