@@ -31,22 +31,6 @@ public class PositionRepository extends JdbcRepository<Position, Integer>{
         return positionList;
     }
 
-    public Position findByName(String name) {
-        List<Position> positionList = new ArrayList<>();
-        try (
-                Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
-                Statement statement = connection.createStatement()) {
-            String SELECT_QUERY = "SELECT * FROM positions WHERE position_name = '" + name + "';";
-            ResultSet resultSet = statement.executeQuery(SELECT_QUERY);
-            while (resultSet.next()) {
-                Position position = getResultSet(resultSet);
-                positionList.add(position);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return positionList.get(0);
-    }
 
     public List<String> findAllPositionName() {
         List<String> positionList = new ArrayList<>();

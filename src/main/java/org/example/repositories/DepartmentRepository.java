@@ -30,23 +30,6 @@ public class DepartmentRepository extends JdbcRepository<Department, Integer> {
         return departmentList;
     }
 
-    public Department findByName(String name) {
-        List<Department> departmentList = new ArrayList<>();
-        try (
-                Connection connection = DriverManager.getConnection(URL_DRIVER, USER, PASSWORD);
-                Statement statement = connection.createStatement()) {
-            String SELECT_QUERY = "SELECT * FROM departments WHERE department_name = '" + name + "';";
-            ResultSet resultSet = statement.executeQuery(SELECT_QUERY);
-            while (resultSet.next()) {
-                Department department = getResultSet(resultSet);
-                departmentList.add(department);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return departmentList.get(0);
-    }
-
     public List<String> findAllNameDepartment() {
         List<String> departmentNameList = new ArrayList<>();
         try (
