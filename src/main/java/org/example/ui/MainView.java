@@ -25,7 +25,6 @@ import java.util.List;
 
 @Route
 @Service
-@PermitAll
 @Scope("prototype")
 public class MainView extends VerticalLayout {
 
@@ -71,6 +70,8 @@ public class MainView extends VerticalLayout {
 
         department.setItems(departmentRepository.findAllNameDepartment());
         position.setItems(positionRepository.findAllPositionName());
+        department.setClearButtonVisible(true);
+        position.setClearButtonVisible(true);
 
         deleteBtn.setEnabled(false);
 
@@ -213,12 +214,17 @@ public class MainView extends VerticalLayout {
             refreshTableData();
         });
     }
-//TODO реализовать метод который по фильтру будет возвращать list employees
 
 
     private void clearInputFields() {
         firstName.clear();
         lastName.clear();
         idField.clear();
+        department.clear();
+        position.clear();
+        filterTextForLastName.clear();
+        filterTextForFirstName.clear();
+        filterBoxForDepartment.clear();
+        filterBoxForPosition.clear();
     }
 }
