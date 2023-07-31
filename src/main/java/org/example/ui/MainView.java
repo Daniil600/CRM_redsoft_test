@@ -66,6 +66,7 @@ public class MainView extends VerticalLayout {
         this.positionRepository = positionRepository;
         this.grid = new Grid<>(Employee.class, false);
         setPositionMap(positionRepository.findAll());
+        System.out.println("Reloaded");;
         setDepartmentMap(departmentRepository.findAll());
         grid.addColumn(Employee::getIdEmployee).setHeader("ID").setSortable(true).setWidth("20px");
         grid.addColumn(Employee::getFirstName).setHeader("First name").setSortable(true);

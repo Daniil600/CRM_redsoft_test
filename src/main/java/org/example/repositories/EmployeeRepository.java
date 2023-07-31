@@ -1,7 +1,5 @@
 package org.example.repositories;
 
-import org.example.dto.EmployeeToDepartmentName;
-import org.example.dto.EmployeeToPositionName;
 import org.example.model.Employee;
 import org.example.model.Position;
 import org.springframework.stereotype.Repository;
@@ -233,32 +231,6 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private EmployeeToPositionName getResultSetPosition(ResultSet resultSet) throws SQLException {
-        Integer id = resultSet.getInt("position_id");
-        String positionName = resultSet.getString("position_name");
-
-        EmployeeToPositionName toPositionName = new EmployeeToPositionName();
-
-        toPositionName.setPositionId(id);
-        toPositionName.setPositionName(positionName);
-
-
-        return toPositionName;
-    }
-
-    private EmployeeToDepartmentName getResultSetDepartment(ResultSet resultSet) throws SQLException {
-        Integer idDepartment = resultSet.getInt("department_id");
-        String departmentName = resultSet.getString("department_name");
-
-        EmployeeToDepartmentName toDepartmentName = new EmployeeToDepartmentName();
-
-        toDepartmentName.setDepartmentid(idDepartment);
-        toDepartmentName.setDepartmentName(departmentName);
-
-
-        return toDepartmentName;
     }
 
     private Employee getResultSet(ResultSet resultSet) throws SQLException {
