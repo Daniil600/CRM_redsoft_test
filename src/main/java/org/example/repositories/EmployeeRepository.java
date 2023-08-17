@@ -6,17 +6,19 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
     PositionRepository positionRepository;
-    static Map<Integer, Position> positionMap = new HashMap<>();
+    static Map<Integer, Position> positionMap = new ConcurrentHashMap<>();
 
     public EmployeeRepository(PositionRepository positionRepository) {
         this.positionRepository = positionRepository;
         setPositionMapRepository(positionRepository.findAll());
     }
-    private void setPositionMapRepository(List<Position> positionList){
+
+    private void setPositionMapRepository(List<Position> positionList) {
         for (int i = 0; i < positionList.size(); i++) {
             positionMap.put(positionList.get(i).getIdPosition(), positionList.get(i));
         }
@@ -40,6 +42,7 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
         }
         return employeeList;
     }
+
     public List<Employee> searchByPosition(String searchTerm) {
 
         List<Employee> employeeList = new ArrayList<>();
@@ -190,7 +193,7 @@ public class EmployeeRepository extends JdbcRepository<Employee, Integer> {
                 Statement statement = connection.createStatement()) {
             String SELECT_BY_ID = "SELECT * FROM employees WHERE employee_id = " + integer + " LIMIT 1;";
             ResultSet resultSet = statement.executeQuery(SELECT_BY_ID);
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 employeeList.add(getResultSet(resultSet));
             }
             employeeOtional = Optional.of(employeeList.get(0));

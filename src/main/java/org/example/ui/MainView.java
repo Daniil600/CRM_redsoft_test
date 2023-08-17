@@ -11,6 +11,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
+import org.example.exception.NotFoundException;
 import org.example.model.Department;
 import org.example.model.Employee;
 import org.example.model.Position;
@@ -24,14 +25,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Route
 @Service
 @Scope("prototype")
 public class MainView extends VerticalLayout {
-    static Map<Integer, Position> positionMap = new HashMap<>();
-    static Map<Integer, Department> departmentMap = new HashMap<>();
+    static Map<Integer, Position> positionMap = new ConcurrentHashMap<>();
+    static Map<Integer, Department> departmentMap = new ConcurrentHashMap<>();
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
@@ -65,9 +67,15 @@ public class MainView extends VerticalLayout {
         this.departmentRepository = departmentRepository;
         this.positionRepository = positionRepository;
         this.grid = new Grid<>(Employee.class, false);
+
+
         setPositionMap(positionRepository.findAll());
-        System.out.println("Reloaded");;
+        System.out.println("Reloaded setPositionMap");
+
         setDepartmentMap(departmentRepository.findAll());
+        System.out.println("Reloaded setDepartmentMap");
+
+
         grid.addColumn(Employee::getIdEmployee).setHeader("ID").setSortable(true).setWidth("20px");
         grid.addColumn(Employee::getFirstName).setHeader("First name").setSortable(true);
         grid.addColumn(Employee::getLastName).setHeader("Last name").setSortable(true);
@@ -206,6 +214,15 @@ public class MainView extends VerticalLayout {
                 Employee selectedCustomer = selected.getFirstSelectedItem().get();
                 firstName.setValue(selectedCustomer.getFirstName());
                 lastName.setValue(selectedCustomer.getLastName());
+                department.setValue(
+                        departmentMap.entrySet().stream().
+                        map(departmentValue -> departmentValue.getValue()).
+                        filter(departmentValue -> departmentValue.getIdDepartment() == selectedCustomer.getDepartmentId())
+                        .findFirst().orElseThrow(() -> new NotFoundException("Not found Department")).getDepartmentName());
+                position.setValue(positionMap.entrySet().stream().
+                        map(positionMap -> positionMap.getValue()).
+                        filter(positionValue -> positionValue.getIdPosition() == selectedCustomer.getPositionId())
+                        .findFirst().orElseThrow(()-> new NotFoundException("Not found Position")).getNamePosition());
                 idField.setValue(selectedCustomer.getIdEmployee());
             }
         });
