@@ -244,11 +244,11 @@ public class MainView extends VerticalLayout {
             customer.setFirstName(firstName.getValue());
             customer.setLastName(lastName.getValue());
             customer.setDepartmentId(departmentMap.entrySet().stream()
-                    .map(departmentStream -> departmentStream.getValue())
+                    .map(Map.Entry::getValue)
                     .filter(departmentStream -> departmentStream.getDepartmentName().equals(department.getValue()))
                     .findFirst().get().getIdDepartment());
             customer.setPositionId(positionMap.entrySet().stream()
-                    .map(departmentStream -> departmentStream.getValue())
+                    .map(Map.Entry::getValue)
                     .filter(departmentStream -> departmentStream.getNamePosition().equals(position.getValue()))
                     .findFirst().get().getIdPosition());
             employeeRepository.save(customer);
